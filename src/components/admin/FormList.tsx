@@ -5,6 +5,7 @@ import { AdminLayout } from './Layout';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
 import { useNavigate } from 'react-router-dom';
 import { Eye, Search, ArrowUpDown, Trash2, Plus } from 'lucide-react';
+import { getStatusLabel, getStatusStyles } from '../../utils/formatters';
 
 interface Form {
   id: string;
@@ -55,6 +56,8 @@ export function FormList() {
       console.error('Error deleting form:', error);
     }
   };
+
+
 
   const filteredForms = forms.filter(form => 
     form.companyName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -140,13 +143,8 @@ export function FormList() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium
-                      ${form.status === 'pending' 
-                        ? 'bg-yellow-100 text-yellow-800' 
-                        : 'bg-green-100 text-green-800'
-                      }`}
-                    >
-                      {form.status.charAt(0).toUpperCase() + form.status.slice(1)}
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusStyles(form.status)}`}>
+                      {getStatusLabel(form.status)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">

@@ -1,95 +1,97 @@
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, onSnapshot, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import { Officer } from '../components/OfficersStep/types';
-import { Director } from '../components/DirectorsStep/types';
 
-interface FormData {
-  companyName: string;
-  shares: {
-    authorizedCommon: string;
-    authorizedPreferred: string;
-    issuedCommon: string;
-    issuedPreferred: string;
-  };
-  totalAssets: {
-    value: string;
-    preference: string;
-  };
-  address: {
-    street1: string;
-    street2: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  };
-  officers: Officer[];
-  directors: Director[];
-  submitter: string;
-  submittedAt: string;
-  status: 'pending' | 'completed';
-}
-
-export async function submitForm(data: FormData) {
+export async function submitForm(data: any) {
   try {
-    // Clean up the data before submission
-    const cleanData = {
+    const formData = {
       ...data,
-      // Ensure all string fields are trimmed
-      companyName: data.companyName.trim(),
-      shares: {
-        authorizedCommon: data.shares.authorizedCommon.trim(),
-        authorizedPreferred: data.shares.authorizedPreferred.trim(),
-        issuedCommon: data.shares.issuedCommon.trim(),
-        issuedPreferred: data.shares.issuedPreferred.trim(),
-      },
-      totalAssets: {
-        value: data.totalAssets.value.trim(),
-        preference: data.totalAssets.preference.trim(),
-      },
-      address: {
-        street1: data.address.street1.trim(),
-        street2: data.address.street2.trim(),
-        city: data.address.city.trim(),
-        state: data.address.state.trim(),
-        zipCode: data.address.zipCode.trim(),
-        country: data.address.country.trim(),
-      },
-      // Clean up officers and directors data
-      officers: data.officers.map(officer => ({
-        ...officer,
-        name: officer.name.trim(),
-        title: officer.title.trim(),
-        address: {
-          street1: officer.address.street1.trim(),
-          street2: officer.address.street2.trim(),
-          city: officer.address.city.trim(),
-          state: officer.address.state.trim(),
-          zipCode: officer.address.zipCode.trim(),
-          country: officer.address.country.trim(),
-        },
-      })),
-      directors: data.directors.map(director => ({
-        ...director,
-        name: director.name.trim(),
-        address: {
-          street1: director.address.street1.trim(),
-          street2: director.address.street2.trim(),
-          city: director.address.city.trim(),
-          state: director.address.state.trim(),
-          zipCode: director.address.zipCode.trim(),
-          country: director.address.country.trim(),
-        },
-      })),
-      submitter: data.submitter.trim(),
+      status: 'pending',
       submittedAt: new Date().toISOString(),
-      status: 'pending' as const,
+      lastModified: new Date().toISOString(),
+      verification: null
     };
 
-    const docRef = await addDoc(collection(db, 'forms'), cleanData);
+    const docRef = await addDoc(collection(db, 'forms'), formData);
     return docRef.id;
   } catch (error) {
     console.error('Error submitting form:', error);
+    throw error;
+  }
+}
+
+export function subscribeToFormUpdates(formId: string, callback: (data: any) => void) {
+  const unsubscribe = onSnapshot(doc(db, 'forms', formId), (doc) => {
+    if (doc.exists()) {
+      callback({ id: doc.id, ...doc.data() });
+    }
+  });
+
+  return unsubscribe;
+}
+
+export async function updateFormData(formId: string, data: any) {
+  try {
+    const formRef = doc(db, 'forms', formId);
+    const docSnap = await getDoc(formRef);
+    
+    if (!docSnap.exists()) {
+      throw new Error('Form not found');
+    }
+
+    // Update the document with new data and timestamp
+    const updateData = {
+      ...data,
+      lastModified: new Date().toISOString()
+    };
+
+    await updateDoc(formRef, updateData);
+    return true;
+  } catch (error) {
+    console.error('Error updating form:', error);
+    throw error;
+  }
+}
+
+export async function getFormById(formId: string):Promise<any> {
+  try {
+    const docRef = doc(db, 'forms', formId);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting form:', error);
+    throw error;
+  }
+}
+
+export async function updateFormStatus(formId: string, status: string) {
+  try {
+    const formRef = doc(db, 'forms', formId);
+    await updateDoc(formRef, {
+      status,
+      lastModified: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error updating form status:', error);
+    throw error;
+  }
+}
+
+export async function updateVerificationStatus(formId: string, submitter: string) {
+  try {
+    const formRef = doc(db, 'forms', formId);
+    await updateDoc(formRef, {
+      'verification.status': 'verified',
+      'verification.submitter': submitter,
+      status: 'client_reviewed',
+      clientVerifiedAt: new Date().toISOString(),
+      lastModified: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error updating verification status:', error);
     throw error;
   }
 }

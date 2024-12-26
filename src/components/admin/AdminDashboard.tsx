@@ -20,8 +20,12 @@ export function AdminDashboard() {
       try {
         const formsRef = collection(db, 'forms');
         
-        // Get recent forms
-        const recentQuery = query(formsRef, orderBy('submittedAt', 'desc'), limit(5));
+        // Get recent forms ordered by lastModified timestamp
+        const recentQuery = query(
+          formsRef, 
+          orderBy('lastModified', 'desc'), 
+          limit(4)
+        );
         const recentSnapshot = await getDocs(recentQuery);
         const recentData = recentSnapshot.docs.map(doc => ({
           id: doc.id,

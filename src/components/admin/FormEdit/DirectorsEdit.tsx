@@ -1,4 +1,3 @@
-import React from 'react';
 import { EditableField } from './EditableField';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
@@ -7,31 +6,85 @@ import { Director } from '../../../types/director';
 interface DirectorsEditProps {
   formId: string;
   directors: Director[];
-  onUpdate: (index: number, field: keyof Director | 'address', value: any) => void;
+  onUpdate: (directors: Director[]) => void;
 }
 
 export function DirectorsEdit({ formId, directors, onUpdate }: DirectorsEditProps) {
   const handleSave = (index: number, field: keyof Director | keyof Director['address'], parentField?: 'address') => async (value: string) => {
     const formRef = doc(db, 'forms', formId);
-    const path = parentField 
+    const path = parentField
       ? `directors.${index}.${parentField}.${field}`
       : `directors.${index}.${field}`;
-    
+
     await updateDoc(formRef, {
-      [path]: value
+      [path]: value,
     });
 
+    const updatedDirectors = [...directors];
     if (parentField) {
-      onUpdate(index, parentField, { ...directors[index][parentField], [field]: value });
+      updatedDirectors[index] = {
+        ...updatedDirectors[index],
+        [parentField]: { ...updatedDirectors[index][parentField], [field]: value },
+      };
     } else {
-      onUpdate(index, field as keyof Director, value);
+      updatedDirectors[index] = {
+        ...updatedDirectors[index],
+        [field]: value,
+      };
     }
+    onUpdate(updatedDirectors);
+  };
+
+  const handleAddDirector = () => {
+    const newDirector: Director = {
+      name: '',
+      address: {
+        street1: '',
+        street2: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        country: 'United States',
+      },
+    };
+    onUpdate([...directors, newDirector]);
+  };
+
+  const handleRemoveDirector = async (index: number) => {
+    const formRef = doc(db, 'forms', formId);
+    const updatedDirectors = directors.filter((_, i) => i !== index);
+    await updateDoc(formRef, {
+      directors: updatedDirectors,
+    });
+    onUpdate(updatedDirectors);
   };
 
   return (
     <div className="space-y-6">
-      {directors.map((director, index) => (
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-semibold text-[#002F49]">Company Directors</h2>
+        <button
+          type="button"
+          onClick={handleAddDirector}
+          className="text-[#002F49] hover:text-[#003a5d] font-medium flex items-center gap-2"
+        >
+          Add Director
+        </button>
+      </div>
+
+      {directors && directors?.map((director, index) => (
         <div key={index} className="p-4 bg-gray-50 rounded-lg space-y-4">
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-gray-500">Director {index + 1}</p>
+            <button
+              type="button"
+              onClick={() => handleRemoveDirector(index)}
+              className="text-red-600 hover:text-red-700 text-sm"
+            >
+              Remove
+            </button>
+          </div>
+
           <div>
             <p className="text-sm text-gray-500 mb-1">Name</p>
             <EditableField

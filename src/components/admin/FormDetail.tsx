@@ -1,50 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../../config/firebase';
-import { AdminLayout } from './Layout';
-import { DeleteConfirmModal } from './DeleteConfirmModal';
-import { SharesEdit } from './FormEdit/SharesEdit';
-import { CompanyEdit } from './FormEdit/CompanyEdit';
-import { TotalAssetsEdit } from './FormEdit/TotalAssetsEdit';
-import { AddressEdit } from './FormEdit/AddressEdit';
-import { OfficersEdit } from './FormEdit/OfficersEdit';
-import { DirectorsEdit } from './FormEdit/DirectorsEdit';
-import { SubmitterEdit } from './FormEdit/SubmitterEdit';
-import { Clock, CheckCircle, Trash2, Building2, Coins, MapPin, Users, User } from 'lucide-react';
-import { Shares } from '../../types/shares';
-import { Address } from '../../types/address';
-import { Officer } from '../../types/officer';
-import { Director } from '../../types/director';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { db } from "../../config/firebase";
+import { AdminLayout } from "./Layout";
+import { DeleteConfirmModal } from "./DeleteConfirmModal";
+import { SharesEdit } from "./FormEdit/SharesEdit";
+import { CompanyEdit } from "./FormEdit/CompanyEdit";
+import { TotalAssetsEdit } from "./FormEdit/TotalAssetsEdit";
+import { AddressEdit } from "./FormEdit/AddressEdit";
+import { OfficersEdit } from "./FormEdit/OfficersEdit";
+import { DirectorsEdit } from "./FormEdit/DirectorsEdit";
+import { SubmitterEdit } from "./FormEdit/SubmitterEdit";
+import { GenerateVerificationButton } from "./GenerateVerificationButton";
+import {
+  Clock,
+  CheckCircle,
+  Trash2,
+  Building2,
+  Coins,
+  MapPin,
+  Users,
+  User,
+} from "lucide-react";
+import { getStatusLabel, getStatusStyles } from "../../utils/formatters";
 
 export function FormDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [form, setForm] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     const fetchForm = async () => {
       if (!id) {
-        setError('No form ID provided');
+        setError("No form ID provided");
         setLoading(false);
         return;
       }
 
       try {
-        const docRef = doc(db, 'forms', id);
+        const docRef = doc(db, "forms", id);
         const docSnap = await getDoc(docRef);
-        
+
         if (docSnap.exists()) {
           setForm({ id: docSnap.id, ...docSnap.data() });
         } else {
-          setError('Form not found');
+          setError("Form not found");
         }
       } catch (error) {
-        setError('Error loading form');
-        console.error('Error fetching form:', error);
+        setError("Error loading form");
+        console.error("Error fetching form:", error);
       } finally {
         setLoading(false);
       }
@@ -56,21 +64,44 @@ export function FormDetail() {
   const handleDelete = async () => {
     if (!id) return;
     try {
-      await deleteDoc(doc(db, 'forms', id));
-      navigate('/admin/forms');
+      await deleteDoc(doc(db, "forms", id));
+      navigate("/admin/forms");
     } catch (error) {
-      console.error('Error deleting form:', error);
+      console.error("Error deleting form:", error);
     }
   };
 
   const handleStatusChange = async () => {
     if (!id || !form) return;
-    const newStatus = form.status === 'pending' ? 'completed' : 'pending';
+    const newStatus = form.status === "pending" ? "completed" : "pending";
     try {
-      await updateDoc(doc(db, 'forms', id), { status: newStatus });
-      setForm({ ...form, status: newStatus });
+      await updateDoc(doc(db, "forms", id), {
+        status: newStatus,
+        lastModified: new Date().toISOString(),
+      });
+      setForm((prevForm: any) => ({
+        ...prevForm,
+        status: newStatus,
+      }));
     } catch (error) {
-      console.error('Error updating status:', error);
+      console.error("Error updating status:", error);
+    }
+  };
+
+  const handleAvaitingClient = async () => {
+    if (!id || !form) return;
+    const newStatus = "awaiting_client";
+    try {
+      await updateDoc(doc(db, "forms", id), {
+        status: newStatus,
+        lastModified: new Date().toISOString(),
+      });
+      setForm((prevForm: any) => ({
+        ...prevForm,
+        status: newStatus,
+      }));
+    } catch (error) {
+      console.error("Error updating status:", error);
     }
   };
 
@@ -92,9 +123,11 @@ export function FormDetail() {
             <div className="flex">
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-red-800">Error</h3>
-                <p className="text-sm text-red-700 mt-1">{error || 'Form not found'}</p>
+                <p className="text-sm text-red-700 mt-1">
+                  {error || "Form not found"}
+                </p>
                 <button
-                  onClick={() => navigate('/admin/forms')}
+                  onClick={() => navigate("/admin/forms")}
                   className="mt-3 text-sm font-medium text-red-700 hover:text-red-600"
                 >
                   Return to Forms List
@@ -112,12 +145,18 @@ export function FormDetail() {
       <div className="p-8 space-y-8">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-semibold text-[#002F49]">{form.companyName}</h1>
+            <h1 className="text-2xl font-semibold text-[#002F49]">
+              {form.companyName}
+            </h1>
             <p className="text-gray-600 mt-1">
               Submitted on {new Date(form.submittedAt).toLocaleDateString()}
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <GenerateVerificationButton
+              formId={id!}
+              setFormStatus={handleAvaitingClient}
+            />
             <button
               onClick={() => setShowDeleteModal(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium
@@ -129,17 +168,14 @@ export function FormDetail() {
             <button
               onClick={handleStatusChange}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium
-                ${form.status === 'pending'
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : 'bg-green-100 text-green-800'
-                }`}
+                ${getStatusStyles(form.status)}`}
             >
-              {form.status === 'pending' ? (
+              {form.status === "pending" ? (
                 <Clock className="w-5 h-5" />
               ) : (
                 <CheckCircle className="w-5 h-5" />
               )}
-              {form.status.charAt(0).toUpperCase() + form.status.slice(1)}
+              {getStatusLabel(form.status)}
             </button>
           </div>
         </div>
@@ -167,10 +203,10 @@ export function FormDetail() {
             <SharesEdit
               formId={form.id}
               shares={form.shares}
-              onUpdate={(field, value) => 
-                setForm({ 
-                  ...form, 
-                  shares: { ...form.shares, [field]: value }
+              onUpdate={(field, value) =>
+                setForm({
+                  ...form,
+                  shares: { ...form.shares, [field]: value },
                 })
               }
             />
@@ -188,7 +224,7 @@ export function FormDetail() {
               onUpdate={(field, value) =>
                 setForm({
                   ...form,
-                  totalAssets: { ...form.totalAssets, [field]: value }
+                  totalAssets: { ...form.totalAssets, [field]: value },
                 })
               }
             />
@@ -198,7 +234,9 @@ export function FormDetail() {
           <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
             <div className="flex items-center gap-3 text-[#002F49]">
               <MapPin className="w-5 h-5" />
-              <h2 className="text-lg font-semibold">Principal Place of Business</h2>
+              <h2 className="text-lg font-semibold">
+                Principal Place of Business
+              </h2>
             </div>
             <AddressEdit
               formId={form.id}
@@ -206,7 +244,7 @@ export function FormDetail() {
               onUpdate={(field, value) =>
                 setForm({
                   ...form,
-                  address: { ...form.address, [field]: value }
+                  address: { ...form.address, [field]: value },
                 })
               }
             />
@@ -221,18 +259,11 @@ export function FormDetail() {
             <OfficersEdit
               formId={form.id}
               officers={form.officers}
-              onUpdate={(index, field, value) => {
-                const newOfficers = [...form.officers];
-                if (field === 'address') {
-                  newOfficers[index].address = value;
-                } else {
-                  newOfficers[index][field] = value;
-                }
-                setForm({ ...form, officers: newOfficers });
-              }}
+              onUpdate={(updatedOfficers) =>
+                setForm({ ...form, officers: updatedOfficers })
+              }
             />
           </div>
-
           {/* Directors */}
           <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
             <div className="flex items-center gap-3 text-[#002F49]">
@@ -242,15 +273,9 @@ export function FormDetail() {
             <DirectorsEdit
               formId={form.id}
               directors={form.directors}
-              onUpdate={(index, field, value) => {
-                const newDirectors = [...form.directors];
-                if (field === 'address') {
-                  newDirectors[index].address = value;
-                } else {
-                  newDirectors[index][field] = value;
-                }
-                setForm({ ...form, directors: newDirectors });
-              }}
+              onUpdate={(updatedDirectors) =>
+                setForm({ ...form, directors: updatedDirectors })
+              }
             />
           </div>
 

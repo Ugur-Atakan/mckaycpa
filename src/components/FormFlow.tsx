@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { FormLayout } from './FormLayout';
 import { WelcomeStep } from './WelcomeStep';
 import { CompanyNameStep } from './CompanyNameStep';
@@ -9,16 +9,10 @@ import { OfficersStep } from './OfficersStep/OfficersStep';
 import { DirectorsStep } from './DirectorsStep/DirectorsStep';
 import { SubmitterStep } from './SubmitterStep/SubmitterStep';
 import { ThanksStep } from './ThanksStep';
-import { Officer } from './OfficersStep/types';
-import { Director } from './DirectorsStep/types';
+import { submitForm } from '../services/formService';
 
-interface FormFlowProps {
-  isAdminMode?: boolean;
-  onSubmit?: (formData: any) => Promise<void>;
-}
-
-export function FormFlow({ isAdminMode, onSubmit }: FormFlowProps) {
-  const [step, setStep] = useState(isAdminMode ? 1 : 0);
+export function FormFlow() {
+  const [step, setStep] = useState(0);
   const [companyName, setCompanyName] = useState('');
   const [shares, setShares] = useState({
     authorizedCommon: '',
@@ -28,7 +22,7 @@ export function FormFlow({ isAdminMode, onSubmit }: FormFlowProps) {
   });
   const [totalAssets, setTotalAssets] = useState({
     value: '',
-    preference: ''
+    preference: 'provide'
   });
   const [address, setAddress] = useState({
     street1: '',
@@ -38,8 +32,8 @@ export function FormFlow({ isAdminMode, onSubmit }: FormFlowProps) {
     zipCode: '',
     country: 'United States'
   });
-  const [officers, setOfficers] = useState<Officer[]>([]);
-  const [directors, setDirectors] = useState<Director[]>([]);
+  const [officers, setOfficers] = useState([]);
+  const [directors, setDirectors] = useState([]);
   const [submitter, setSubmitter] = useState('');
 
   const handleSubmit = async () => {
@@ -50,20 +44,14 @@ export function FormFlow({ isAdminMode, onSubmit }: FormFlowProps) {
       address,
       officers,
       directors,
-      submitter,
-      submittedAt: new Date().toISOString(),
-      status: 'pending'
+      submitter
     };
 
-    if (isAdminMode && onSubmit) {
-      await onSubmit(formData);
-    } else {
-      try {
-        // Regular form submission logic
-        setStep(step + 1);
-      } catch (error) {
-        console.error('Error submitting form:', error);
-      }
+    try {
+      await submitForm(formData);
+      setStep(step + 1);
+    } catch (error) {
+      console.error('Error submitting form:', error);
     }
   };
 
@@ -123,7 +111,7 @@ export function FormFlow({ isAdminMode, onSubmit }: FormFlowProps) {
           onSubmit={handleSubmit}
         />
       )}
-      {step === 8 && !isAdminMode && <ThanksStep />}
+      {step === 8 && <ThanksStep />}
     </FormLayout>
   );
 }

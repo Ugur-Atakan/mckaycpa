@@ -9,12 +9,17 @@ import { FormNew } from './components/admin/FormNew';
 import { SettingsPage } from './components/admin/Settings/SettingsPage';
 import { ProtectedRoute } from './components/admin/ProtectedRoute';
 import { FormFlow } from './components/FormFlow';
+import { ClientVerification } from './components/ClientVerification';
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Client Routes */}
         <Route path="/" element={<FormFlow />} />
+        <Route path="/verify/:formId/:token" element={<ClientVerification />} />
+
+        {/* Admin Routes */}
         <Route path="/admin" element={<AdminLogin />} />
         <Route
           path="/admin/dashboard"

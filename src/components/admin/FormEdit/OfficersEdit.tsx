@@ -1,4 +1,3 @@
-import React from 'react';
 import { EditableField } from './EditableField';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
@@ -7,31 +6,86 @@ import { Officer } from '../../../types/officer';
 interface OfficersEditProps {
   formId: string;
   officers: Officer[];
-  onUpdate: (index: number, field: keyof Officer | 'address', value: any) => void;
+  onUpdate: (officers: Officer[]) => void;
 }
 
 export function OfficersEdit({ formId, officers, onUpdate }: OfficersEditProps) {
   const handleSave = (index: number, field: keyof Officer | keyof Officer['address'], parentField?: 'address') => async (value: string) => {
     const formRef = doc(db, 'forms', formId);
-    const path = parentField 
+    const path = parentField
       ? `officers.${index}.${parentField}.${field}`
       : `officers.${index}.${field}`;
-    
+
     await updateDoc(formRef, {
-      [path]: value
+      [path]: value,
     });
 
+    const updatedOfficers = [...officers];
     if (parentField) {
-      onUpdate(index, parentField, { ...officers[index][parentField], [field]: value });
+      updatedOfficers[index] = {
+        ...updatedOfficers[index],
+        [parentField]: { ...updatedOfficers[index][parentField], [field]: value },
+      };
     } else {
-      onUpdate(index, field as keyof Officer, value);
+      updatedOfficers[index] = {
+        ...updatedOfficers[index],
+        [field]: value,
+      };
     }
+    onUpdate(updatedOfficers);
+  };
+
+  const handleAddOfficer = () => {
+    const newOfficer: Officer = {
+      name: '',
+      title: '',
+      address: {
+        street1: '',
+        street2: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        country: 'United States',
+      },
+    };
+    onUpdate([...officers, newOfficer]);
+  };
+
+  const handleRemoveOfficer = async (index: number) => {
+    const formRef = doc(db, 'forms', formId);
+    const updatedOfficers = officers.filter((_, i) => i !== index);
+    await updateDoc(formRef, {
+      officers: updatedOfficers,
+    });
+    onUpdate(updatedOfficers);
   };
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-semibold text-[#002F49]">Company Officers</h2>
+        <button
+          type="button"
+          onClick={handleAddOfficer}
+          className="text-[#002F49] hover:text-[#003a5d] font-medium flex items-center gap-2"
+        >
+          Add Officer
+        </button>
+      </div>
+
       {officers.map((officer, index) => (
         <div key={index} className="p-4 bg-gray-50 rounded-lg space-y-4">
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-gray-500">Officer {index + 1}</p>
+            <button
+              type="button"
+              onClick={() => handleRemoveOfficer(index)}
+              className="text-red-600 hover:text-red-700 text-sm"
+            >
+              Remove
+            </button>
+          </div>
+
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-500 mb-1">Name</p>
