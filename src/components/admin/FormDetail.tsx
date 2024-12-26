@@ -9,7 +9,6 @@ import { CompanyEdit } from "./FormEdit/CompanyEdit";
 import { TotalAssetsEdit } from "./FormEdit/TotalAssetsEdit";
 import { AddressEdit } from "./FormEdit/AddressEdit";
 import { OfficersEdit } from "./FormEdit/OfficersEdit";
-import { DirectorsEdit } from "./FormEdit/DirectorsEdit";
 import { SubmitterEdit } from "./FormEdit/SubmitterEdit";
 import { GenerateVerificationButton } from "./GenerateVerificationButton";
 import {
@@ -19,21 +18,24 @@ import {
   Building2,
   Coins,
   MapPin,
-  Users,
   User,
 } from "lucide-react";
 import { getStatusLabel, getStatusStyles } from "../../utils/formatters";
+import { DirectorsEdit } from "./FormEdit/DirectorsEdit";
+import { ensureArray } from "../../utils/common";
+import { updateFormData } from "../../services/formService";
 
 export function FormDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [form, setForm] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+
   useEffect(() => {
+    let formData;
     const fetchForm = async () => {
       if (!id) {
         setError("No form ID provided");
@@ -46,7 +48,15 @@ export function FormDetail() {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setForm({ id: docSnap.id, ...docSnap.data() });
+      
+          formData={ id: docSnap.id, ...docSnap.data()}
+          //@ts-ignore
+          const officers= ensureArray(formData.officers);
+          //@ts-ignore
+          const directors= ensureArray(formData.directors);
+          formData={...formData,officers,directors}
+          console.log('Formatlanmış form data:',formData)
+          setForm(formData);
         } else {
           setError("Form not found");
         }
@@ -104,6 +114,21 @@ export function FormDetail() {
       console.error("Error updating status:", error);
     }
   };
+
+
+  const handleUpdate = async () => {
+      try {
+        const success = await updateFormData(id!, form);
+        if (success) {
+          setForm(form);
+        } else {
+          throw new Error('Update failed');
+        }
+      } catch (err) {
+        console.error('Error updating field:', err);
+      }
+    };
+
 
   if (loading) {
     return (
@@ -251,32 +276,21 @@ export function FormDetail() {
           </div>
 
           {/* Officers */}
-          <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
-            <div className="flex items-center gap-3 text-[#002F49]">
-              <Users className="w-5 h-5" />
-              <h2 className="text-lg font-semibold">Company Officers</h2>
-            </div>
+          <div className="bg-white rounded-xl shadow-sm">
             <OfficersEdit
-              formId={form.id}
               officers={form.officers}
-              onUpdate={(updatedOfficers) =>
-                setForm({ ...form, officers: updatedOfficers })
-              }
+              setOfficers={(updatedOfficers) => setForm({ ...form, officers: updatedOfficers })}
+              handleSubmit={handleUpdate}
+            
             />
           </div>
           {/* Directors */}
-          <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
-            <div className="flex items-center gap-3 text-[#002F49]">
-              <Users className="w-5 h-5" />
-              <h2 className="text-lg font-semibold">Company Directors</h2>
-            </div>
+          <div className="bg-white rounded-xl shadow-sm">
             <DirectorsEdit
-              formId={form.id}
-              directors={form.directors}
-              onUpdate={(updatedDirectors) =>
-                setForm({ ...form, directors: updatedDirectors })
-              }
-            />
+                      directors={form.directors}
+                      setDirectors={(updatedDirectors) => setForm({ ...form, directors: updatedDirectors })}
+                      handleSubmit={handleUpdate}
+                      />
           </div>
 
           {/* Submitter */}

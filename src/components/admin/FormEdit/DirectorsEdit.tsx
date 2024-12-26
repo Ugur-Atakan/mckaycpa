@@ -1,40 +1,25 @@
-import { EditableField } from './EditableField';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../../config/firebase';
-import { Director } from '../../../types/director';
+import { Users, UserPlus } from 'lucide-react';
+import { AddressSection } from './AddressSection';
 
-interface DirectorsEditProps {
-  formId: string;
-  directors: Director[];
-  onUpdate: (directors: Director[]) => void;
+interface Director {
+  name: string;
+  address: {
+    street1: string;
+    street2: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
 }
 
-export function DirectorsEdit({ formId, directors, onUpdate }: DirectorsEditProps) {
-  const handleSave = (index: number, field: keyof Director | keyof Director['address'], parentField?: 'address') => async (value: string) => {
-    const formRef = doc(db, 'forms', formId);
-    const path = parentField
-      ? `directors.${index}.${parentField}.${field}`
-      : `directors.${index}.${field}`;
+interface DirectorSectionProps {
+  directors: Director[];
+  setDirectors: (directors: Director[]) => void;
+  handleSubmit?:()=>Promise<void>;
+}
 
-    await updateDoc(formRef, {
-      [path]: value,
-    });
-
-    const updatedDirectors = [...directors];
-    if (parentField) {
-      updatedDirectors[index] = {
-        ...updatedDirectors[index],
-        [parentField]: { ...updatedDirectors[index][parentField], [field]: value },
-      };
-    } else {
-      updatedDirectors[index] = {
-        ...updatedDirectors[index],
-        [field]: value,
-      };
-    }
-    onUpdate(updatedDirectors);
-  };
-
+export function DirectorsEdit({ directors, setDirectors,handleSubmit }: DirectorSectionProps) {
   const handleAddDirector = () => {
     const newDirector: Director = {
       name: '',
@@ -47,109 +32,105 @@ export function DirectorsEdit({ formId, directors, onUpdate }: DirectorsEditProp
         country: 'United States',
       },
     };
-    onUpdate([...directors, newDirector]);
+    const updatedDirectors = [...directors, newDirector];
+    setDirectors(updatedDirectors);
   };
 
-  const handleRemoveDirector = async (index: number) => {
-    const formRef = doc(db, 'forms', formId);
+  const handleRemoveDirector = (index: number) => {
     const updatedDirectors = directors.filter((_, i) => i !== index);
-    await updateDoc(formRef, {
-      directors: updatedDirectors,
-    });
-    onUpdate(updatedDirectors);
+    setDirectors(updatedDirectors);
   };
+
+  const handleDirectorChange = (
+    index: number,
+    field: keyof Director | 'address',
+    value: any
+  ) => {
+    const updatedDirectors = [...directors];
+    if (field === 'address') {
+      updatedDirectors[index] = {
+        ...updatedDirectors[index],
+        address: value,
+      };
+    } else {
+      updatedDirectors[index] = {
+        ...updatedDirectors[index],
+        [field]: value,
+      };
+    }
+    setDirectors(updatedDirectors);
+  };
+
+
+
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-[#002F49]">Company Directors</h2>
+    <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 text-[#002F49]">
+          <Users className="w-5 h-5" />
+          <h2 className="text-lg font-semibold">Company Directors</h2>
+        </div>
         <button
           type="button"
           onClick={handleAddDirector}
           className="text-[#002F49] hover:text-[#003a5d] font-medium flex items-center gap-2"
         >
+          <UserPlus className="w-5 h-5" />
           Add Director
         </button>
       </div>
 
-      {directors && directors?.map((director, index) => (
-        <div key={index} className="p-4 bg-gray-50 rounded-lg space-y-4">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-500">Director {index + 1}</p>
-            <button
-              type="button"
-              onClick={() => handleRemoveDirector(index)}
-              className="text-red-600 hover:text-red-700 text-sm"
-            >
-              Remove
-            </button>
-          </div>
+      <div className="space-y-6">
+        {directors.map((director, index) => (
+          <div key={index} className="p-6 bg-gray-50 rounded-xl space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium text-[#002F49]">
+                Director {index + 1}
+              </h3>
+              {directors.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => handleRemoveDirector(index)}
+                  className="text-red-600 hover:text-red-700 text-sm"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
 
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Name</p>
-            <EditableField
-              value={director.name}
-              onSave={handleSave(index, 'name')}
-              label="Director Name"
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={director.name}
+                onChange={(e) =>
+                  handleDirectorChange(index, 'name', e.target.value)
+                }
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002F49] focus:border-transparent"
+                required
+              />
+            </div>
+
+            <AddressSection
+              address={director.address}
+              onChange={(address) =>
+                handleDirectorChange(index, 'address', address)
+              }
             />
           </div>
-
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Street Address</p>
-              <EditableField
-                value={director.address.street1}
-                onSave={handleSave(index, 'street1', 'address')}
-                label="Street Address"
-              />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Street Address Line 2</p>
-              <EditableField
-                value={director.address.street2}
-                onSave={handleSave(index, 'street2', 'address')}
-                label="Street Address Line 2"
-              />
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">City</p>
-                <EditableField
-                  value={director.address.city}
-                  onSave={handleSave(index, 'city', 'address')}
-                  label="City"
-                />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">State</p>
-                <EditableField
-                  value={director.address.state}
-                  onSave={handleSave(index, 'state', 'address')}
-                  label="State"
-                />
-              </div>
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">ZIP Code</p>
-                <EditableField
-                  value={director.address.zipCode}
-                  onSave={handleSave(index, 'zipCode', 'address')}
-                  label="ZIP Code"
-                />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Country</p>
-                <EditableField
-                  value={director.address.country}
-                  onSave={handleSave(index, 'country', 'address')}
-                  label="Country"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
+        ))}
+        {handleSubmit && (
+        <button
+        onClick={handleSubmit}
+        className="w-full bg-[#002F49] text-white px-8 py-4 rounded-full font-semibold"
+      >
+        Save Directors
+      </button>
+          )}
+      </div>
     </div>
   );
 }

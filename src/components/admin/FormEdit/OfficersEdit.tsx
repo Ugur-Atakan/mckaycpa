@@ -1,42 +1,28 @@
-import { EditableField } from './EditableField';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../../config/firebase';
-import { Officer } from '../../../types/officer';
+import { Users, UserPlus } from 'lucide-react';
+import { AddressSection } from './AddressSection';
 
-interface OfficersEditProps {
-  formId: string;
-  officers: Officer[];
-  onUpdate: (officers: Officer[]) => void;
+interface Officer {
+  name: string;
+  title: string;
+  address: {
+    street1: string;
+    street2: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
 }
 
-export function OfficersEdit({ formId, officers, onUpdate }: OfficersEditProps) {
-  const handleSave = (index: number, field: keyof Officer | keyof Officer['address'], parentField?: 'address') => async (value: string) => {
-    const formRef = doc(db, 'forms', formId);
-    const path = parentField
-      ? `officers.${index}.${parentField}.${field}`
-      : `officers.${index}.${field}`;
+interface OfficerSectionProps {
+  officers: Officer[];
+  setOfficers: (officers: Officer[]) => void;
+  handleSubmit?:()=>Promise<void>;
+}
 
-    await updateDoc(formRef, {
-      [path]: value,
-    });
-
-    const updatedOfficers = [...officers];
-    if (parentField) {
-      updatedOfficers[index] = {
-        ...updatedOfficers[index],
-        [parentField]: { ...updatedOfficers[index][parentField], [field]: value },
-      };
-    } else {
-      updatedOfficers[index] = {
-        ...updatedOfficers[index],
-        [field]: value,
-      };
-    }
-    onUpdate(updatedOfficers);
-  };
-
+export function OfficersEdit({ officers, setOfficers,handleSubmit }: OfficerSectionProps) {
   const handleAddOfficer = () => {
-    const newOfficer: Officer = {
+    setOfficers([...officers, {
       name: '',
       title: '',
       address: {
@@ -45,122 +31,112 @@ export function OfficersEdit({ formId, officers, onUpdate }: OfficersEditProps) 
         city: '',
         state: '',
         zipCode: '',
-        country: 'United States',
-      },
-    };
-    onUpdate([...officers, newOfficer]);
+        country: 'United States'
+      }
+    }]);
   };
 
-  const handleRemoveOfficer = async (index: number) => {
-    const formRef = doc(db, 'forms', formId);
-    const updatedOfficers = officers.filter((_, i) => i !== index);
-    await updateDoc(formRef, {
-      officers: updatedOfficers,
-    });
-    onUpdate(updatedOfficers);
+  const handleRemoveOfficer = (index: number) => {
+    setOfficers(officers.filter((_, i) => i !== index));
   };
+
+
+  const handleOfficerChange = (index: number, field: keyof Officer | 'address', value: any) => {
+        const updatedOfficers = [...officers];
+        if (field === 'address') {
+          updatedOfficers[index] = {
+            ...updatedOfficers[index],
+            address: value,
+          };
+        } else {
+          updatedOfficers[index] = {
+            ...updatedOfficers[index],
+            [field]: value,
+          };
+        }
+        setOfficers(updatedOfficers);
+      };
+    
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-[#002F49]">Company Officers</h2>
+    <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 text-[#002F49]">
+          <Users className="w-5 h-5" />
+          <h2 className="text-lg font-semibold">Company Officers</h2>
+        </div>
         <button
           type="button"
           onClick={handleAddOfficer}
           className="text-[#002F49] hover:text-[#003a5d] font-medium flex items-center gap-2"
         >
+          <UserPlus className="w-5 h-5" />
           Add Officer
         </button>
       </div>
 
-      {officers.map((officer, index) => (
-        <div key={index} className="p-4 bg-gray-50 rounded-lg space-y-4">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-500">Officer {index + 1}</p>
-            <button
-              type="button"
-              onClick={() => handleRemoveOfficer(index)}
-              className="text-red-600 hover:text-red-700 text-sm"
-            >
-              Remove
-            </button>
-          </div>
+      <div className="space-y-6">
+        {officers.map((officer, index) => (
+          <div key={index} className="p-6 bg-gray-50 rounded-xl space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium text-[#002F49]">
+                Officer {index + 1}
+              </h3>
+              {officers.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => handleRemoveOfficer(index)}
+                  className="text-red-600 hover:text-red-700 text-sm"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Name</p>
-              <EditableField
-                value={officer.name}
-                onSave={handleSave(index, 'name')}
-                label="Officer Name"
-              />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Title</p>
-              <EditableField
-                value={officer.title}
-                onSave={handleSave(index, 'title')}
-                label="Officer Title"
-              />
-            </div>
-          </div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={officer.name}
+                  onChange={(e) => handleOfficerChange(index, 'name', e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002F49] focus:border-transparent"
+                  required
+                />
+              </div>
 
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Street Address</p>
-              <EditableField
-                value={officer.address.street1}
-                onSave={handleSave(index, 'street1', 'address')}
-                label="Street Address"
-              />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Street Address Line 2</p>
-              <EditableField
-                value={officer.address.street2}
-                onSave={handleSave(index, 'street2', 'address')}
-                label="Street Address Line 2"
-              />
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-500 mb-1">City</p>
-                <EditableField
-                  value={officer.address.city}
-                  onSave={handleSave(index, 'city', 'address')}
-                  label="City"
-                />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">State</p>
-                <EditableField
-                  value={officer.address.state}
-                  onSave={handleSave(index, 'state', 'address')}
-                  label="State"
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  value={officer.title}
+                  onChange={(e) => handleOfficerChange(index, 'title', e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002F49] focus:border-transparent"
+                  required
                 />
               </div>
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">ZIP Code</p>
-                <EditableField
-                  value={officer.address.zipCode}
-                  onSave={handleSave(index, 'zipCode', 'address')}
-                  label="ZIP Code"
-                />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Country</p>
-                <EditableField
-                  value={officer.address.country}
-                  onSave={handleSave(index, 'country', 'address')}
-                  label="Country"
-                />
-              </div>
-            </div>
+
+            <AddressSection
+              address={officer.address}
+              onChange={(address) => handleOfficerChange(index, 'address', address)}
+            />
           </div>
-        </div>
-      ))}
+        ))}
+        {handleSubmit && (
+        <button
+        onClick={handleSubmit}
+        className="w-full bg-[#002F49] text-white px-8 py-4 rounded-full font-semibold"
+      >
+        Save Officers
+      </button>
+          )}
+      </div>
+      
     </div>
   );
 }

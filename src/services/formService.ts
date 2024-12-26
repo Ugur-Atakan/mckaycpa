@@ -30,6 +30,7 @@ export function subscribeToFormUpdates(formId: string, callback: (data: any) => 
 }
 
 export async function updateFormData(formId: string, data: any) {
+  console.log('Updating form data:', data); // Debugging purposes
   try {
     const formRef = doc(db, 'forms', formId);
     const docSnap = await getDoc(formRef);
