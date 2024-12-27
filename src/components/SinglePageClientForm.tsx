@@ -14,9 +14,9 @@ import {
   User,
 } from "lucide-react";
 import { EditableField } from "./EditableField";
-import { SubmittedFormModal } from "./admin/SubmittedFormModal";
 import { OfficersEdit } from "./admin/FormEdit/OfficersEdit";
 import { DirectorsEdit } from "./admin/FormEdit/DirectorsEdit";
+import { useNavigate } from "react-router-dom";
 
 interface SinglePageClientFormProps {
   formId: string;
@@ -32,14 +32,15 @@ export function SinglePageClientForm({
   const [error, setError] = useState<string | null>(null);
   const [submitter, setSubmitter] = useState("");
   const [verified, setVerified] = useState(false);
-  const [showModal, setShowModal] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
+
+  const navigation = useNavigate();
 
   const handleSubmit = async () => {
     try {
       await handleUpdate();
       await updateVerificationStatus(formId, formData);
-      setShowModal(true);
+      navigation("/thanks");
     } catch (error) {
       console.error(error);
     }
@@ -357,10 +358,6 @@ export function SinglePageClientForm({
           </button>
         </div>
       </div>
-      <SubmittedFormModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-      />
     </div>
   );
 }

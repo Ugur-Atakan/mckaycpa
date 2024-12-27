@@ -10,6 +10,7 @@ import { SettingsPage } from './components/admin/Settings/SettingsPage';
 import { ProtectedRoute } from './components/admin/ProtectedRoute';
 import { FormFlow } from './components/FormFlow';
 import { ClientVerification } from './components/ClientVerification';
+import { ThanksStep } from './components/admin/ThanksStep';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         {/* Client Routes */}
         <Route path="/" element={<FormFlow />} />
         <Route path="/verify/:formId/:token" element={<ClientVerification />} />
+        <Route path="/thanks" element={<ThanksStep/>} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLogin />} />

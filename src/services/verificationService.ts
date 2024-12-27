@@ -56,10 +56,10 @@ export async function verifyToken(formId: string, token: string) {
       return false;
     }
 
-    // Check if expired (24 hours)
+    // Check if expired (7  Days)
     const createdAt = new Date(data.verification.createdAt).getTime();
     const now = new Date().getTime();
-    const expirationTime = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    const expirationTime = 7*24 * 60 * 60 * 1000; // 7 days in milliseconds
     
     if (now - createdAt > expirationTime) {
       console.error('Verification link expired');

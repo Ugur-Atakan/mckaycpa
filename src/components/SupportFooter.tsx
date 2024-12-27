@@ -10,7 +10,7 @@ export function SupportFooter({ pageName }: SupportFooterProps) {
     e.preventDefault();
     const subject = encodeURIComponent('Support Request: Delaware Franchise Tax Report Form');
     const body = encodeURIComponent(`Hello,\n\nI need assistance with the ${pageName} page of the Delaware Franchise Tax Report Form.\n\n[Please describe your problem here]`);
-    window.location.href = `mailto:team@mckaycpa.com?cc=cto@mckaycpa.com&subject=${subject}&body=${body}`;
+    window.location.href = `mailto:team@mckaycpa.com&subject=${subject}&body=${body}`;
   };
 
   return (

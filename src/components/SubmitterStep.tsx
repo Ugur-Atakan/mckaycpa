@@ -10,7 +10,6 @@ interface SubmitterStepProps {
   directors: Director[];
   submitter: string;
   setSubmitter: (submitter: string) => void;
-  onSubmit: () => void;
   onPrev: () => void;
   onNext: () => void;
 }

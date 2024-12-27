@@ -35,7 +35,7 @@ export function ThanksStep() {
             <Calendar className="w-5 h-5 text-[#002F49]" />
             <div>
               <p className="font-medium text-[#002F49]">Processing Time</p>
-              <p className="text-sm text-gray-600">2-3 business days</p>
+              <p className="text-sm text-gray-600">We'll be in touch soon.</p>
             </div>
           </div>
           

@@ -128,7 +128,6 @@ export function FormFlow() {
           onPrev={prevStep}
           onNext={nextStep}
           setSubmitter={setSubmitter}
-          onSubmit={handleSubmit}
         />
       )}
       {
