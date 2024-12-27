@@ -7,6 +7,7 @@ interface CompanyNameStepProps {
   companyName: string;
   setCompanyName: (name: string) => void;
   onNext: () => void;
+
 }
 
 export function CompanyNameStep({ companyName, setCompanyName, onNext }: CompanyNameStepProps) {

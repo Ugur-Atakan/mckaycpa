@@ -11,9 +11,10 @@ interface TotalAssetsStepProps {
   };
   setTotalAssets: (totalAssets: { value: string; preference: string }) => void;
   onNext: () => void;
+  onPrev: () => void;
 }
 
-export function TotalAssetsStep({ totalAssets, setTotalAssets, onNext }: TotalAssetsStepProps) {
+export function TotalAssetsStep({ totalAssets, setTotalAssets, onNext,onPrev }: TotalAssetsStepProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (totalAssets.preference === 'provide' && !totalAssets.value) return;
@@ -49,6 +50,17 @@ export function TotalAssetsStep({ totalAssets, setTotalAssets, onNext }: TotalAs
       onSubmit={handleSubmit}
       className="space-y-8"
     >
+      <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={onPrev}
+                className="text-[#002F49] font-medium flex items-center gap-2"
+              >
+                <ArrowRight className="transform rotate-180 w-5 h-5" />
+                Back
+              </button>
+              <div className="text-gray-500 text-sm">Step 3 of 8</div>
+            </div>
       <div className="space-y-3">
         <h2 className="text-2xl font-semibold text-[#002F49]">Total Assets Information</h2>
         <p className="text-gray-600">

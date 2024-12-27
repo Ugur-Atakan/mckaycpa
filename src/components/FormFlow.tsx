@@ -1,61 +1,74 @@
-import  { useState } from 'react';
-import { FormLayout } from './FormLayout';
-import { WelcomeStep } from './WelcomeStep';
-import { CompanyNameStep } from './CompanyNameStep';
-import { SharesStep } from './SharesStep';
-import { TotalAssetsStep } from './TotalAssetsStep';
-import { AddressStep } from './AddressStep';
-import { OfficersStep } from './OfficersStep/OfficersStep';
-import { DirectorsStep } from './DirectorsStep/DirectorsStep';
-import { SubmitterStep } from './SubmitterStep/SubmitterStep';
-import { ThanksStep } from './ThanksStep';
-import { submitForm } from '../services/formService';
+import { useState } from "react";
+import { FormLayout } from "./FormLayout";
+import { WelcomeStep } from "./WelcomeStep";
+import { CompanyNameStep } from "./CompanyNameStep";
+import { SharesStep } from "./SharesStep";
+import { TotalAssetsStep } from "./TotalAssetsStep";
+import { AddressStep } from "./AddressStep";
+import { OfficersStep } from "./OfficersStep/OfficersStep";
+import { DirectorsStep } from "./DirectorsStep/DirectorsStep";
+import { SubmitterStep } from "./SubmitterStep";
+import { ThanksStep } from "./ThanksStep";
+import { submitForm } from "../services/formService";
+import ReviewStep from "./ReviewStep";
 
 export function FormFlow() {
   const [step, setStep] = useState(0);
-  const [companyName, setCompanyName] = useState('');
+  const [companyName, setCompanyName] = useState("");
   const [shares, setShares] = useState({
-    authorizedCommon: '',
-    authorizedPreferred: '',
-    issuedCommon: '',
-    issuedPreferred: ''
+    authorizedCommon: "",
+    authorizedPreferred: "",
+    issuedCommon: "",
+    issuedPreferred: "",
   });
   const [totalAssets, setTotalAssets] = useState({
-    value: '',
-    preference: 'provide'
+    value: "",
+    preference: "provide",
   });
   const [address, setAddress] = useState({
-    street1: '',
-    street2: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: 'United States'
+    street1: "",
+    street2: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "United States",
   });
   const [officers, setOfficers] = useState([]);
   const [directors, setDirectors] = useState([]);
-  const [submitter, setSubmitter] = useState('');
+  const [submitter, setSubmitter] = useState("");
+
+  let formData = {
+    companyName,
+    shares,
+    totalAssets,
+    address,
+    officers,
+    directors,
+    submitter,
+  };
 
   const handleSubmit = async () => {
-    const formData = {
+    formData = {
       companyName,
       shares,
       totalAssets,
       address,
       officers,
       directors,
-      submitter
+      submitter,
     };
 
+    console.log("Submitting form:", formData);
     try {
       await submitForm(formData);
       setStep(step + 1);
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error("Error submitting form:", error);
     }
   };
 
   const nextStep = () => setStep(step + 1);
+  const prevStep = () => setStep(step - 1);
 
   return (
     <FormLayout companyName={step > 1 ? companyName : undefined}>
@@ -72,6 +85,7 @@ export function FormFlow() {
           shares={shares}
           setShares={setShares}
           onNext={nextStep}
+          onPrev={prevStep}
         />
       )}
       {step === 3 && (
@@ -79,6 +93,7 @@ export function FormFlow() {
           totalAssets={totalAssets}
           setTotalAssets={setTotalAssets}
           onNext={nextStep}
+          onPrev={prevStep}
         />
       )}
       {step === 4 && (
@@ -86,6 +101,7 @@ export function FormFlow() {
           address={address}
           setAddress={setAddress}
           onNext={nextStep}
+          onPrev={prevStep}
         />
       )}
       {step === 5 && (
@@ -93,6 +109,7 @@ export function FormFlow() {
           officers={officers}
           setOfficers={setOfficers}
           onNext={nextStep}
+          onPrev={prevStep}
         />
       )}
       {step === 6 && (
@@ -100,6 +117,7 @@ export function FormFlow() {
           directors={directors}
           setDirectors={setDirectors}
           onNext={nextStep}
+          onPrev={prevStep}
         />
       )}
       {step === 7 && (
@@ -107,11 +125,21 @@ export function FormFlow() {
           officers={officers}
           directors={directors}
           submitter={submitter}
+          onPrev={prevStep}
+          onNext={nextStep}
           setSubmitter={setSubmitter}
           onSubmit={handleSubmit}
         />
       )}
-      {step === 8 && <ThanksStep />}
+      {
+      step === 8 && (
+        <ReviewStep
+          formData={formData}
+          onPrev={prevStep}
+          onSubmit={handleSubmit}
+        />
+      )}
+      {step === 9 && <ThanksStep />}
     </FormLayout>
   );
 }

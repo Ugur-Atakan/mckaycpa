@@ -7,11 +7,12 @@ import { Director, emptyDirector } from './types';
 
 interface DirectorsStepProps {
   directors: Director[];
-  setDirectors: (directors: Director[]) => void;
+  setDirectors: any;
   onNext: () => void;
+  onPrev: () => void;
 }
 
-export function DirectorsStep({ directors, setDirectors, onNext }: DirectorsStepProps) {
+export function DirectorsStep({ directors, setDirectors, onNext,onPrev }: DirectorsStepProps) {
   const [localDirectors, setLocalDirectors] = useState<Director[]>(
     directors.length > 0 ? directors : [{ ...emptyDirector }]
   );
@@ -54,6 +55,18 @@ export function DirectorsStep({ directors, setDirectors, onNext }: DirectorsStep
       onSubmit={handleSubmit}
       className="space-y-8"
     >
+      <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={onPrev}
+                className="text-[#002F49] font-medium flex items-center gap-2"
+              >
+                <ArrowRight className="transform rotate-180 w-5 h-5" />
+                Back
+              </button>
+              <div className="text-gray-500 text-sm">Step 6 of 8</div>
+            </div>
+
       <div className="space-y-3">
         <h2 className="text-2xl font-semibold text-[#002F49]">Company Directors</h2>
         <p className="text-gray-600">

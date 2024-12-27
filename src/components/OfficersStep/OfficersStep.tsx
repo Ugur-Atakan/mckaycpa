@@ -7,11 +7,13 @@ import { Officer, emptyOfficer } from './types';
 
 interface OfficersStepProps {
   officers: Officer[];
-  setOfficers: (officers: Officer[]) => void;
+  setOfficers:any;
   onNext: () => void;
+  onPrev: () => void;
 }
 
-export function OfficersStep({ officers, setOfficers, onNext }: OfficersStepProps) {
+
+export function OfficersStep({ officers, setOfficers, onNext,onPrev }: OfficersStepProps) {
   const [localOfficers, setLocalOfficers] = useState<Officer[]>(
     officers.length > 0 ? officers : [{ ...emptyOfficer }]
   );
@@ -54,6 +56,17 @@ export function OfficersStep({ officers, setOfficers, onNext }: OfficersStepProp
       onSubmit={handleSubmit}
       className="space-y-8"
     >
+      <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={onPrev}
+                className="text-[#002F49] font-medium flex items-center gap-2"
+              >
+                <ArrowRight className="transform rotate-180 w-5 h-5" />
+                Back
+              </button>
+              <div className="text-gray-500 text-sm">Step 5 of 8</div>
+            </div>
       <div className="space-y-3">
         <h2 className="text-2xl font-semibold text-[#002F49]">Company Officers</h2>
         <p className="text-gray-600">

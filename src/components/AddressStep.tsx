@@ -23,9 +23,10 @@ interface AddressStepProps {
     country: string;
   }) => void;
   onNext: () => void;
+  onPrev: () => void;
 }
 
-export function AddressStep({ address, setAddress, onNext }: AddressStepProps) {
+export function AddressStep({ address, setAddress, onNext,onPrev }: AddressStepProps) {
   const [isInternational, setIsInternational] = React.useState(address.country !== 'United States');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -47,6 +48,18 @@ export function AddressStep({ address, setAddress, onNext }: AddressStepProps) {
       onSubmit={handleSubmit}
       className="space-y-8"
     >
+      <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={onPrev}
+                className="text-[#002F49] font-medium flex items-center gap-2"
+              >
+                <ArrowRight className="transform rotate-180 w-5 h-5" />
+                Back
+              </button>
+              <div className="text-gray-500 text-sm">Step 4 of 8</div>
+            </div>
+
       <div className="space-y-3">
         <h2 className="text-2xl font-semibold text-[#002F49]">Principal Place of Business</h2>
         <p className="text-gray-600">

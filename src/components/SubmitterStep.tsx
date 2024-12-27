@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Send, ChevronDown } from 'lucide-react';
-import { SupportFooter } from '../SupportFooter';
-import { Officer } from '../OfficersStep/types';
-import { Director } from '../DirectorsStep/types';
+import { ChevronDown, ArrowRight } from 'lucide-react';
+import { SupportFooter } from './SupportFooter';
+import { Officer } from './OfficersStep/types';
+import { Director } from './DirectorsStep/types';
 
 interface SubmitterStepProps {
   officers: Officer[];
@@ -11,6 +11,8 @@ interface SubmitterStepProps {
   submitter: string;
   setSubmitter: (submitter: string) => void;
   onSubmit: () => void;
+  onPrev: () => void;
+  onNext: () => void;
 }
 
 export function SubmitterStep({ 
@@ -18,7 +20,8 @@ export function SubmitterStep({
   directors, 
   submitter,
   setSubmitter,
-  onSubmit 
+  onPrev,
+  onNext
 }: SubmitterStepProps) {
   const allPeople = [
     ...officers.map(o => ({ name: o.name, role: 'Officer', title: o.title })),
@@ -27,9 +30,7 @@ export function SubmitterStep({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (submitter) {
-      onSubmit();
-    }
+    onNext();
   };
 
   return (
@@ -40,6 +41,17 @@ export function SubmitterStep({
       onSubmit={handleSubmit}
       className="space-y-8"
     >
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={onPrev}
+          className="text-[#002F49] font-medium flex items-center gap-2"
+        >
+          <ArrowRight className="transform rotate-180 w-5 h-5" />
+          Back
+        </button>
+        <div className="text-gray-500 text-sm">Step 7 of 8</div>
+      </div>
       <div className="space-y-3">
         <h2 className="text-2xl font-semibold text-[#002F49]">Submitter Information</h2>
         <p className="text-gray-600">
@@ -63,6 +75,7 @@ export function SubmitterStep({
             <option value="">Select a person</option>
             {allPeople.map((person, index) => (
               <option key={index} value={person.name}>
+                {/* @ts-ignore */}
                 {person.name} ({person.role}{person.title ? ` - ${person.title}` : ''})
               </option>
             ))}
@@ -71,19 +84,18 @@ export function SubmitterStep({
         </div>
       </div>
 
-      <div className="pt-6">
+      <div className="pt-4">
         <button
           type="submit"
           className="w-full bg-[#002F49] text-white px-8 py-4 rounded-full font-semibold 
                    flex items-center justify-center gap-2 hover:bg-[#003a5d] transition-colors
                    shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-          disabled={!submitter}
+        disabled={!submitter}
         >
-          Submit Form
-          <Send className="w-5 h-5" />
+          Continue
+          <ArrowRight className="w-5 h-5" />
         </button>
       </div>
-
       <SupportFooter pageName="Submitter Information" />
     </motion.form>
   );
