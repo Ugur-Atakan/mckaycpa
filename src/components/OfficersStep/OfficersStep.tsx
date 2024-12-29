@@ -18,6 +18,8 @@ export function OfficersStep({ officers, setOfficers, onNext,onPrev }: OfficersS
     officers.length > 0 ? officers : [{ ...emptyOfficer }]
   );
 
+  const [isHaveOfficer, setIsHaveOfficer] = useState(false);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setOfficers(localOfficers);
@@ -74,6 +76,14 @@ export function OfficersStep({ officers, setOfficers, onNext,onPrev }: OfficersS
         </p>
       </div>
 
+<div className="flex items-center gap-4">
+<input type="checkbox" checked={isHaveOfficer} onChange={() => setIsHaveOfficer(!isHaveOfficer)} />
+    <p className="text-gray-600">
+      There is no officer in the Corporation
+      </p>
+</div>
+
+    {!isHaveOfficer && (
       <div className="space-y-6">
         {localOfficers.map((officer, index) => (
           <OfficerForm
@@ -97,7 +107,7 @@ export function OfficersStep({ officers, setOfficers, onNext,onPrev }: OfficersS
           Add Another Officer
         </button>
       </div>
-
+    )}     
       <div className="pt-6">
         <button
           type="submit"

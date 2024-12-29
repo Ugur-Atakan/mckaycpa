@@ -144,7 +144,7 @@ export function OfficerForm({ index, officer, onChange, onRemove, showRemove }: 
                   onChange={handleAddressChange('state')}
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002F49] focus:border-transparent"
                   placeholder="Enter state/province/region"
-                  required
+                  
                 />
               ) : (
                 <select

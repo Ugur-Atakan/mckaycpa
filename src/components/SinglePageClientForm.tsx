@@ -36,6 +36,22 @@ export function SinglePageClientForm({
 
   const navigation = useNavigate();
 
+  const formatCurrency = (value: string) => {
+    // Remove all non-numeric characters
+    const numbers = value.replace(/\D/g, '');
+    // Format as currency
+    if (numbers) {
+      const amount = parseInt(numbers);
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(amount);
+    }
+    return '';
+  };
+
   const handleSubmit = async () => {
     try {
       await handleUpdate();
@@ -256,7 +272,7 @@ export function SinglePageClientForm({
           <div>
             <p className="text-sm text-gray-500 mb-1">Total Assets Value</p>
             <EditableField
-              value={formData.totalAssets.value}
+              value={formatCurrency(formData.totalAssets.preference)}
               onSave={(value) =>
                 handleFieldUpdate("totalAssets", "value", value)
               }

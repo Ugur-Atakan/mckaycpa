@@ -22,11 +22,13 @@ export function SubmitterStep({
   onPrev,
   onNext
 }: SubmitterStepProps) {
+  
   const allPeople = [
-    ...officers.map(o => ({ name: o.name, role: 'Officer', title: o.title })),
-    ...directors.map(d => ({ name: d.name, role: 'Director' }))
+    ...(officers.length > 1
+      ? officers.map(o => ({ name: o.name, role: 'Officer', title: o.title }))
+      : []),
+    ...directors.map(d => ({ name: d.name, role: 'Director' })),
   ];
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onNext();

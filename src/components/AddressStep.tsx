@@ -166,7 +166,6 @@ export function AddressStep({ address, setAddress, onNext,onPrev }: AddressStepP
                     onChange={handleChange('state')}
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002F49] focus:border-transparent"
                     placeholder="Enter state, province, or region"
-                    required
                   />
                 </>
               ) : (

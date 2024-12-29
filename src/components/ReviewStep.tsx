@@ -127,7 +127,8 @@ const ReviewStep = ({ onSubmit, onPrev,formData }: ReviewProps) => {
         </div>
 
         {/* Officers */}
-        <div>
+        {formData.officers.length > 1 ? (
+          <div>
           <h2 className="text-lg font-semibold text-gray-800">Officers</h2>
           {formData.officers.map((officer, index) => (
             <div key={index} className="bg-gray-50 p-4 rounded-md shadow-sm space-y-2">
@@ -139,6 +140,12 @@ const ReviewStep = ({ onSubmit, onPrev,formData }: ReviewProps) => {
             </div>
           ))}
         </div>
+        ):(
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800">Officers</h2>
+            There is no officer in the Corporation
+          </div>
+          )}
 
         {/* Directors */}
         <div>

@@ -16,9 +16,26 @@ export function EditableField({ value, onSave, label, type = 'text' }: EditableF
     let newValue = e.target.value;
     if (type === 'currency') {
       // Allow only numbers and decimal point
-      newValue = newValue.replace(/[^0-9.]/g, '');
+      newValue = formatCurrency(newValue.replace(/[^0-9.]/g, ''));
     }
     setEditValue(newValue);
+  };
+
+
+  const formatCurrency = (value: string) => {
+    // Remove all non-numeric characters
+    const numbers = value.replace(/\D/g, '');
+    // Format as currency
+    if (numbers) {
+      const amount = parseInt(numbers);
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(amount);
+    }
+    return '';
   };
 
   const handleSave = () => {
