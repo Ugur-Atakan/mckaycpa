@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Coins } from 'lucide-react';
 
 interface Shares {
@@ -13,11 +13,31 @@ interface SharesSectionProps {
   onChange: (shares: Shares) => void;
 }
 
+const formatNumber = (value: string | number) => {
+  if (!value) return '';
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(Number(value));
+};
+
 export function SharesSection({ shares, onChange }: SharesSectionProps) {
-  const handleChange = (field: keyof Shares) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    onChange({ ...shares, [field]: value });
-  };
+ 
+   const [formattedShares, setFormattedShares] = useState<Shares>({
+     authorizedCommon: formatNumber(shares.authorizedCommon),
+     authorizedPreferred: formatNumber(shares.authorizedPreferred),
+     issuedCommon: formatNumber(shares.issuedCommon),
+     issuedPreferred: formatNumber(shares.issuedPreferred),
+   });
+   
+    const handleChange = (field: keyof Shares) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const rawValue = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
+      const formattedValue = formatNumber(rawValue); 
+      onChange({ ...shares, [field]: rawValue }); // Update raw value in parent component
+      setFormattedShares({ ...formattedShares, [field]: formattedValue }); // Update formatted value locally
+    };
+    
+
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
@@ -36,7 +56,7 @@ export function SharesSection({ shares, onChange }: SharesSectionProps) {
               </label>
               <input
                 type="text"
-                value={shares.authorizedCommon}
+                value={formattedShares.authorizedCommon}
                 onChange={handleChange('authorizedCommon')}
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002F49] focus:border-transparent"
                 required
@@ -48,7 +68,7 @@ export function SharesSection({ shares, onChange }: SharesSectionProps) {
               </label>
               <input
                 type="text"
-                value={shares.authorizedPreferred}
+                value={formattedShares.authorizedPreferred}
                 onChange={handleChange('authorizedPreferred')}
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002F49] focus:border-transparent"
                 required
@@ -66,7 +86,7 @@ export function SharesSection({ shares, onChange }: SharesSectionProps) {
               </label>
               <input
                 type="text"
-                value={shares.issuedCommon}
+                value={formattedShares.issuedCommon}
                 onChange={handleChange('issuedCommon')}
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002F49] focus:border-transparent"
                 required
@@ -78,7 +98,7 @@ export function SharesSection({ shares, onChange }: SharesSectionProps) {
               </label>
               <input
                 type="text"
-                value={shares.issuedPreferred}
+                value={formattedShares.issuedPreferred}
                 onChange={handleChange('issuedPreferred')}
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002F49] focus:border-transparent"
                 required

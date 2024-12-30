@@ -1,22 +1,56 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import { Check, X, Edit2 } from 'lucide-react';
 
 interface EditableFieldProps {
   value: string;
   onSave: (value: string) => Promise<void>;
   label: string;
-  type?: 'text' | 'number';
+  type?: 'text' | 'number' | 'currency' | 'universal-number';
 }
+
+const formatNumber = (value: string | number) => {
+  if (!value) return '';
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(Number(value));
+};
 
 export function EditableField({ value, onSave, label, type = 'text' }: EditableFieldProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const [isLoading, setIsLoading] = useState(false);
 
+  const formatCurrency = (value: string) => {
+    const numbers = value.replace(/\D/g, ''); // Remove all non-numeric characters
+    if (numbers) {
+      const amount = parseInt(numbers);
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    }
+    return '';
+  };
+
+  const parseCurrency = (value: string) => {
+    return value.replace(/[^0-9]/g, ''); // Remove all non-numeric characters
+  };
+
   const handleSave = async () => {
     try {
       setIsLoading(true);
-      await onSave(editValue);
+      let valueToSave = editValue;
+
+      if (type === 'currency') {
+        valueToSave = parseCurrency(editValue); // Save plain number for currency
+      } else if (type === 'universal-number') {
+        valueToSave = editValue.replace(/\D/g, ''); // Save plain number for universal-number
+      }
+
+      await onSave(valueToSave);
       setIsEditing(false);
     } catch (error) {
       console.error('Error saving:', error);
@@ -30,10 +64,28 @@ export function EditableField({ value, onSave, label, type = 'text' }: EditableF
     setIsEditing(false);
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+
+    if (type === 'currency') {
+      setEditValue(formatCurrency(inputValue)); // Format as currency
+    } else if (type === 'universal-number') {
+      setEditValue(formatNumber(inputValue.replace(/\D/g, ''))); // Format as universal-number
+    } else {
+      setEditValue(inputValue); // Plain text or number
+    }
+  };
+
   if (!isEditing) {
     return (
       <div className="group flex items-center gap-2">
-        <span className="text-gray-900">{value}</span>
+        <span className="text-gray-900">
+          {type === 'currency'
+            ? formatCurrency(value)
+            : type === 'universal-number'
+            ? formatNumber(value)
+            : value}
+        </span>
         <button
           onClick={() => setIsEditing(true)}
           className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-gray-600"
@@ -47,9 +99,9 @@ export function EditableField({ value, onSave, label, type = 'text' }: EditableF
   return (
     <div className="flex items-center gap-2">
       <input
-        type={type}
+        type="text"
         value={editValue}
-        onChange={(e) => setEditValue(e.target.value)}
+        onChange={handleChange}
         className="px-2 py-1 border rounded-md focus:ring-2 focus:ring-[#002F49] focus:border-transparent"
         disabled={isLoading}
       />

@@ -129,7 +129,6 @@ export function FormDetail() {
       }
     };
 
-
   if (loading) {
     return (
       <AdminLayout>
@@ -246,7 +245,10 @@ export function FormDetail() {
             <TotalAssetsEdit
               formId={form.id}
               totalAssets={form.totalAssets}
-              onUpdate={(field, value) =>
+              setTotalAssets={(updatedTotalAssets) =>
+                setForm({ ...form, totalAssets: updatedTotalAssets })
+              }
+                onUpdate={(field, value) =>
                 setForm({
                   ...form,
                   totalAssets: { ...form.totalAssets, [field]: value },

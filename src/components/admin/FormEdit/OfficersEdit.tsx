@@ -22,6 +22,7 @@ interface OfficerSectionProps {
 
 export function OfficersEdit({ officers, setOfficers,handleSubmit }: OfficerSectionProps) {
   const handleAddOfficer = () => {
+    console.log('officers',officers);
     setOfficers([...officers, {
       name: '',
       title: '',
@@ -76,13 +77,13 @@ export function OfficersEdit({ officers, setOfficers,handleSubmit }: OfficerSect
       </div>
 
       <div className="space-y-6">
-        {officers.map((officer, index) => (
+        {officers.length>0?(officers.map((officer, index) => (
           <div key={index} className="p-6 bg-gray-50 rounded-xl space-y-6">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium text-[#002F49]">
                 Officer {index + 1}
               </h3>
-              {officers.length > 1 && (
+              {officers.length > 0 && (
                 <button
                   type="button"
                   onClick={() => handleRemoveOfficer(index)}
@@ -126,7 +127,11 @@ export function OfficersEdit({ officers, setOfficers,handleSubmit }: OfficerSect
               onChange={(address) => handleOfficerChange(index, 'address', address)}
             />
           </div>
-        ))}
+        ))):(
+          <div className="p-6 bg-gray-50 rounded-xl space-y-6">
+            <p className="text-gray-600">There is no officer in the Corporation</p>
+          </div>
+        )}
         {handleSubmit && (
         <button
         onClick={handleSubmit}

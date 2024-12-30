@@ -15,7 +15,7 @@ interface OfficersStepProps {
 
 export function OfficersStep({ officers, setOfficers, onNext,onPrev }: OfficersStepProps) {
   const [localOfficers, setLocalOfficers] = useState<Officer[]>(
-    officers.length > 0 ? officers : [{ ...emptyOfficer }]
+    officers.length > 0 ? officers : []
   );
 
   const [isHaveOfficer, setIsHaveOfficer] = useState(false);

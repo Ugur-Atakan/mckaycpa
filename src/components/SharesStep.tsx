@@ -13,13 +13,25 @@ interface SharesStepProps {
   onPrev: () => void;
 }
 
-export function SharesStep({ shares, setShares, onNext,onPrev }: SharesStepProps) {
+const formatNumber = (value: string | number) => {
+  if (!value) return '';
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(Number(value));
+};
+
+const parseNumber = (value: string) => {
+  return value.replace(/\D/g, ''); // Remove non-numeric characters
+};
+
+export function SharesStep({ shares, setShares, onNext, onPrev }: SharesStepProps) {
   const [errors, setErrors] = useState<string[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const validation = validateShares(shares);
-    
+
     if (validation.isValid) {
       setErrors([]);
       onNext();
@@ -29,8 +41,12 @@ export function SharesStep({ shares, setShares, onNext,onPrev }: SharesStepProps
   };
 
   const handleChange = (field: keyof Shares) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    setShares({ ...shares, [field]: value });
+    const rawValue = parseNumber(e.target.value);
+    const formattedValue = formatNumber(rawValue);
+
+    setShares({ ...shares, [field]: rawValue }); // Save raw value to state
+    e.target.value = formattedValue; // Format value for display
+
     // Clear errors when user starts typing
     if (errors.length > 0) {
       setErrors([]);
@@ -38,15 +54,21 @@ export function SharesStep({ shares, setShares, onNext,onPrev }: SharesStepProps
   };
 
   const isFormValid = () => {
-    return shares.authorizedCommon && shares.authorizedPreferred && 
-           shares.issuedCommon && shares.issuedPreferred;
+    return (
+      shares.authorizedCommon &&
+      shares.authorizedPreferred &&
+      shares.issuedCommon &&
+      shares.issuedPreferred
+    );
   };
 
   const tooltips = {
-    authorizedCommon: "The maximum number of common shares that your corporation is permitted to issue according to its certificate of incorporation.",
-    authorizedPreferred: "The maximum number of preferred shares that your corporation is permitted to issue according to its certificate of incorporation.",
-    issuedCommon: "The actual number of common shares that have been issued to shareholders.",
-    issuedPreferred: "The actual number of preferred shares that have been issued to shareholders."
+    authorizedCommon:
+      'The maximum number of common shares that your corporation is permitted to issue according to its certificate of incorporation.',
+    authorizedPreferred:
+      'The maximum number of preferred shares that your corporation is permitted to issue according to its certificate of incorporation.',
+    issuedCommon: 'The actual number of common shares that have been issued to shareholders.',
+    issuedPreferred: 'The actual number of preferred shares that have been issued to shareholders.',
   };
 
   return (
@@ -106,7 +128,7 @@ export function SharesStep({ shares, setShares, onNext,onPrev }: SharesStepProps
       <div className="grid md:grid-cols-2 gap-6">
         <div className="space-y-6">
           <h3 className="text-lg font-medium text-[#002F49]">Authorized Shares</h3>
-          
+
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <label htmlFor="authorizedCommon" className="block text-sm font-medium text-gray-700">
@@ -119,7 +141,7 @@ export function SharesStep({ shares, setShares, onNext,onPrev }: SharesStepProps
             <input
               type="text"
               id="authorizedCommon"
-              value={shares.authorizedCommon}
+              value={formatNumber(shares.authorizedCommon)}
               onChange={handleChange('authorizedCommon')}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002F49] focus:border-transparent"
               placeholder="Enter number"
@@ -139,7 +161,7 @@ export function SharesStep({ shares, setShares, onNext,onPrev }: SharesStepProps
             <input
               type="text"
               id="authorizedPreferred"
-              value={shares.authorizedPreferred}
+              value={formatNumber(shares.authorizedPreferred)}
               onChange={handleChange('authorizedPreferred')}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002F49] focus:border-transparent"
               placeholder="Enter number"
@@ -150,7 +172,7 @@ export function SharesStep({ shares, setShares, onNext,onPrev }: SharesStepProps
 
         <div className="space-y-6">
           <h3 className="text-lg font-medium text-[#002F49]">Issued Shares</h3>
-          
+
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <label htmlFor="issuedCommon" className="block text-sm font-medium text-gray-700">
@@ -163,7 +185,7 @@ export function SharesStep({ shares, setShares, onNext,onPrev }: SharesStepProps
             <input
               type="text"
               id="issuedCommon"
-              value={shares.issuedCommon}
+              value={formatNumber(shares.issuedCommon)}
               onChange={handleChange('issuedCommon')}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002F49] focus:border-transparent"
               placeholder="Enter number"
@@ -183,7 +205,7 @@ export function SharesStep({ shares, setShares, onNext,onPrev }: SharesStepProps
             <input
               type="text"
               id="issuedPreferred"
-              value={shares.issuedPreferred}
+              value={formatNumber(shares.issuedPreferred)}
               onChange={handleChange('issuedPreferred')}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002F49] focus:border-transparent"
               placeholder="Enter number"

@@ -63,6 +63,20 @@ const ReviewStep = ({ onSubmit, onPrev,formData }: ReviewProps) => {
     onSubmit();
   };
 
+  const formatNumber = (value: string) => {
+    // Remove all non-numeric characters
+    const numbers = value.replace(/\D/g, '');
+    // Format as currency
+    if (numbers) {
+      const amount = parseInt(numbers);
+      return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(amount);
+    }
+    return '';
+  };
+
   console.log(formData);
   return (
     <motion.form
@@ -103,10 +117,10 @@ const ReviewStep = ({ onSubmit, onPrev,formData }: ReviewProps) => {
         <div>
           <h2 className="text-lg font-semibold text-gray-800">Shares</h2>
           <ul className="text-gray-600 space-y-1">
-            <li>Authorized Common: {formData.shares.authorizedCommon}</li>
-            <li>Authorized Preferred: {formData.shares.authorizedPreferred}</li>
-            <li>Issued Common: {formData.shares.issuedCommon}</li>
-            <li>Issued Preferred: {formData.shares.issuedPreferred}</li>
+            <li>Authorized Common: {formatNumber(formData.shares.authorizedCommon)}</li>
+            <li>Authorized Preferred: {formatNumber(formData.shares.authorizedPreferred)}</li>
+            <li>Issued Common: {formatNumber(formData.shares.issuedCommon)}</li>
+            <li>Issued Preferred: {formatNumber(formData.shares.issuedPreferred)}</li>
           </ul>
         </div>
 

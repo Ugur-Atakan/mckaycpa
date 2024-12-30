@@ -12,11 +12,13 @@ import {
   MapPin,
 
   User,
+  UserPlus,
+  Users,
 } from "lucide-react";
-import { EditableField } from "./EditableField";
 import { OfficersEdit } from "./admin/FormEdit/OfficersEdit";
 import { DirectorsEdit } from "./admin/FormEdit/DirectorsEdit";
 import { useNavigate } from "react-router-dom";
+import { EditableField } from "./EditableField";
 
 interface SinglePageClientFormProps {
   formId: string;
@@ -215,7 +217,7 @@ export function SinglePageClientForm({
                       handleFieldUpdate("shares", "authorizedCommon", value)
                     }
                     label="Authorized Common Shares"
-                    type="number"
+                    type="universal-number"
                   />
                 </div>
                 <div>
@@ -226,7 +228,7 @@ export function SinglePageClientForm({
                       handleFieldUpdate("shares", "authorizedPreferred", value)
                     }
                     label="Authorized Preferred Shares"
-                    type="number"
+                    type="universal-number"
                   />
                 </div>
               </div>
@@ -242,7 +244,7 @@ export function SinglePageClientForm({
                       handleFieldUpdate("shares", "issuedCommon", value)
                     }
                     label="Issued Common Shares"
-                    type="number"
+                  type="universal-number"
                   />
                 </div>
                 <div>
@@ -253,7 +255,7 @@ export function SinglePageClientForm({
                       handleFieldUpdate("shares", "issuedPreferred", value)
                     }
                     label="Issued Preferred Shares"
-                    type="number"
+                  type="universal-number"
                   />
                 </div>
               </div>
@@ -269,10 +271,52 @@ export function SinglePageClientForm({
             <Coins className="w-5 h-5" />
             <h3 className="text-lg font-semibold">Total Assets</h3>
           </div>
+
+          <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            How would you like to proceed?
+          </label>
+          <div className="space-y-3">
+            <label className="flex items-center space-x-3 p-4 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors">
+              <input
+                type="radio"
+                name="preference"
+                value="provide"
+                checked={formData.totalAssets.preference === 'provide'}
+                onChange={(e) =>handleFieldUpdate("totalAssets", "preference", e.target.value)}
+               className="w-4 h-4 text-[#002F49] focus:ring-[#002F49]"
+              />
+              <div>
+                <span className="text-gray-700 font-medium">I will provide this information</span>
+                <p className="text-sm text-gray-500 mt-1">
+                  Select this if you have your total assets figure ready
+                </p>
+              </div>
+            </label>
+
+            <label className="flex items-center space-x-3 p-4 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors">
+              <input
+                type="radio"
+                name="preference"
+                value="help"
+                checked={formData.totalAssets.preference === 'help'}
+                onChange={(e) =>handleFieldUpdate("totalAssets", "preference", e.target.value)}
+                className="w-4 h-4 text-[#002F49] focus:ring-[#002F49]"
+              />
+              <div>
+                <span className="text-gray-700 font-medium">Please prepare this for me</span>
+                <p className="text-sm text-gray-500 mt-1">
+                  We'll help calculate your total assets based on your financial statements
+                </p>
+              </div>
+            </label>
+          </div>
+
+          {formData.totalAssets.preference === 'provide' && (
           <div>
             <p className="text-sm text-gray-500 mb-1">Total Assets Value</p>
             <EditableField
-              value={formatCurrency(formData.totalAssets.preference)}
+              value={formatCurrency(formData.totalAssets.value  )}
               onSave={(value) =>
                 handleFieldUpdate("totalAssets", "value", value)
               }
@@ -280,6 +324,9 @@ export function SinglePageClientForm({
               type="currency"
             />
           </div>
+
+          )}
+        </div>
         </div>
       )}
 
@@ -313,7 +360,7 @@ export function SinglePageClientForm({
       )}
 
       {/* Officers */}
-      {formData.officers && formData.officers.length > 0 && (
+      {formData.officers && (
         <OfficersEdit
           officers={formData.officers}
           setOfficers={(updatedOfficers) =>
@@ -350,7 +397,7 @@ export function SinglePageClientForm({
               required
             >
               <option value="">Select a person</option>
-              {formData.officers?.map((officer: any, index: number) => (
+              { formData.officers.length>1&&formData.officers?.map((officer: any, index: number) => (
                 <option key={`officer-${index}`} value={officer.name}>
                   {officer.name} (Officer - {officer.title})
                 </option>
